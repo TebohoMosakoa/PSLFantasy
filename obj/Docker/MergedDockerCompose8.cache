@@ -1,0 +1,21 @@
+name: dockercompose12182741575447018342
+services:
+  teams-api:
+    build:
+      context: C:\Users\mosak\source\repos\PSLFantasy
+      dockerfile: Backend/APIs/Teams/Dockerfile
+    container_name: teams-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    image: teams
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 80
+      published: "8001"
+      protocol: tcp
+    restart: unless-stopped
+networks:
+  default:
+    name: dockercompose12182741575447018342_default

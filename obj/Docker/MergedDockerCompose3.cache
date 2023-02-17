@@ -1,0 +1,70 @@
+name: dockercompose12182741575447018342
+services:
+  pgadmin:
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: test@admin.com
+      PGADMIN_DEFAULT_PASSWORD: Teboho#@123
+    image: dpage/pgadmin4
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 80
+      published: "5050"
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: volume
+      source: pgadmin
+      target: /root/.pgadmin
+      volume: {}
+  pslfantasy:
+    container_name: teamdb
+    environment:
+      POSTGRES_DB: TeamDb
+      POSTGRES_PASSWORD: Teboho#@123
+      POSTGRES_USER: Teboho
+    image: postgres:latest
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 5432
+      published: "5432"
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: volume
+      source: database-data
+      target: /var/lib/postgresql/data
+      volume: {}
+  teams:
+    build:
+      context: C:\Users\mosak\source\repos\PSLFantasy
+      dockerfile: Backend/APIs/Teams/Dockerfile
+    container_name: teams
+    depends_on:
+      pslfantasy:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DatabaseSettings:ConnectionString: Host=pslfantasy;Port=5432;Database=TeamDb;User
+        Id=Teboho;Password=Teboho#@123;
+    image: teams
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 80
+      published: "8001"
+      protocol: tcp
+    restart: unless-stopped
+networks:
+  default:
+    name: dockercompose12182741575447018342_default
+volumes:
+  database-data:
+    name: dockercompose12182741575447018342_database-data
+  pgadmin:
+    name: dockercompose12182741575447018342_pgadmin

@@ -1,0 +1,122 @@
+name: dockercompose12182741575447018342
+services:
+  pgadmin:
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: test@admin.com
+      PGADMIN_DEFAULT_PASSWORD: Teboho#@123
+    image: dpage/pgadmin4
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 80
+      published: "5050"
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: volume
+      source: pgadmin
+      target: /root/.pgadmin
+      volume: {}
+  pslfantasy:
+    container_name: teamdb
+    environment:
+      POSTGRES_DB: TeamDb
+      POSTGRES_PASSWORD: Teboho#@123
+      POSTGRES_USER: Teboho
+    image: postgres:latest
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 5432
+      published: "5432"
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: volume
+      source: database-data
+      target: /var/lib/postgresql/data
+      volume: {}
+  teams:
+    build:
+      context: C:\Users\mosak\source\repos\PSLFantasy
+      dockerfile: Backend/APIs/Teams/Dockerfile
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: Teams
+      target: base
+    container_name: teams
+    depends_on:
+      pslfantasy:
+        condition: service_started
+    entrypoint:
+    - tail
+    - -f
+    - /dev/null
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      DatabaseSettings:ConnectionString: Host=pslfantasy;Port=5432;Database=TeamDb;User
+        Id=Teboho;Password=Teboho#@123;
+      NUGET_FALLBACK_PACKAGES: ""
+    image: teams:dev
+    labels:
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath /root/.nuget/packages  "/app/bin/Debug/net6.0/Teams.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: /bin/sh -c "if PID=$$(pidof
+        dotnet); then kill $$PID; fi"
+      com.microsoft.visualstudio.debuggee.program: dotnet
+      com.microsoft.visualstudio.debuggee.workingdirectory: /app
+    networks:
+      default: null
+    ports:
+    - mode: ingress
+      target: 80
+      published: "8001"
+      protocol: tcp
+    restart: unless-stopped
+    tty: true
+    volumes:
+    - type: bind
+      source: C:\Users\mosak\source\repos\PSLFantasy\Backend\APIs\Teams
+      target: /app
+      bind:
+        create_host_path: true
+    - type: bind
+      source: C:\Users\mosak\source\repos\PSLFantasy
+      target: /src
+      bind:
+        create_host_path: true
+    - type: bind
+      source: C:\Users\mosak\vsdbg\vs2017u5
+      target: /remote_debugger
+      bind:
+        create_host_path: true
+    - type: bind
+      source: C:\Users\mosak\.nuget\packages\
+      target: /root/.nuget/packages
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: C:\Users\mosak\AppData\Roaming/ASP.NET/Https
+      target: /root/.aspnet/https
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: C:\Users\mosak\AppData\Roaming/Microsoft/UserSecrets
+      target: /root/.microsoft/usersecrets
+      read_only: true
+      bind:
+        create_host_path: true
+networks:
+  default:
+    name: dockercompose12182741575447018342_default
+volumes:
+  database-data:
+    name: dockercompose12182741575447018342_database-data
+  pgadmin:
+    name: dockercompose12182741575447018342_pgadmin
